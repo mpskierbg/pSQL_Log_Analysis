@@ -5,3 +5,6 @@ first.most_popular_articlex3()
 
 second = SqlPython()
 second.most_popular_author()
+
+third = SqlPython()
+third.most_errors()

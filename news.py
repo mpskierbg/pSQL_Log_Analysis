@@ -47,17 +47,31 @@ class SqlPython:
         conn = psycopg2.connect("dbname=news")
         cur = conn.cursor()
         cur.execute("""
-            ;
+            WITH totalCallsByDate AS
+            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate, COUNT(time) AS TotalNumberOfCalls
+            FROM log GROUP BY CallDate)
+            , notFoundsByDate AS
+            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate, COUNT(time) AS TotalNumberOfCalls
+            FROM log WHERE status = '404 NOT FOUND' GROUP BY CallDate)
+            , finalQuery AS
+            (SELECT t.CallDate, cast(100.0* coalesce(nf.TotalNumberOfCalls,0)/t.TotalNumberOfCalls as numeric(5,2))
+            as ErrorPercent
+            FROM totalCallsByDate t LEFT JOIN
+            notFoundsByDate nf ON
+            t.CallDate = nf.CallDate
+            ORDER BY ErrorPercent desc)
+            SELECT * FROM finalQuery
+            WHERE ErrorPercent > 1;
             """)
 
         result = cur.fetchall()
 
         print(" ")
-        print("The days with more than 1 percent of requests lead to errors: ")
+        print("The days when more than 1 percent of requests lead to errors: ")
         print("-------------------------------------------------------------")
 
-        for title, count in result:
-            print(title + " -- " + str(count) + " views.")
-            print(" ")
+        for date, error in result:
+             print(str(date) + " - " + str(error) + "% errors.")
+             print(" ")
 
         conn.close
