@@ -1,23 +1,29 @@
 #!/usr/bin/env python2.7
 import psycopg2
 
+
 class SqlPython:
 
     def most_popular_articlex3(self):
-        conn = psycopg2.connect("dbname=news")
+        conn = psycopg2.connect("dbname=news")  # Connects to database
         cur = conn.cursor()
+        # Executes my PostgreSQL query
         cur.execute("""
-            SELECT articles.title, COUNT(articles.title) AS totalnumber FROM articles LEFT JOIN log
+            SELECT articles.title, COUNT(articles.title) AS totalnumber
+            FROM articles LEFT JOIN log
             ON articles.slug = substr(log.path, 10, 25)
             GROUP BY articles.title
             ORDER BY totalnumber desc limit 3;
             """)
 
+        # Stores the query into a variable result
         result = cur.fetchall()
+
         print("The three most popular articles of all time: ")
         print("--------------------------------------------")
+        #  Loop through results to print out in a readable format
         for title, count in result:
-            print('"'  + title + '" -- ' + str(count) + " views.")
+            print('"' + title + '" -- ' + str(count) + " views.")
             print(" ")
 
         conn.close
@@ -49,13 +55,17 @@ class SqlPython:
         cur = conn.cursor()
         cur.execute("""
             WITH totalCallsByDate AS
-            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate, COUNT(time) AS TotalNumberOfCalls
+            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate,
+            COUNT(time) AS TotalNumberOfCalls
             FROM log GROUP BY CallDate)
             , notFoundsByDate AS
-            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate, COUNT(time) AS TotalNumberOfCalls
+            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate,
+            COUNT(time) AS TotalNumberOfCalls
             FROM log WHERE status = '404 NOT FOUND' GROUP BY CallDate)
             , finalQuery AS
-            (SELECT t.CallDate, cast(100.0* coalesce(nf.TotalNumberOfCalls,0)/t.TotalNumberOfCalls as numeric(5,2))
+            (SELECT t.CallDate,
+            cast(100.0* coalesce(nf.TotalNumberOfCalls,0)/t.TotalNumberOfCalls
+            as numeric(5,2))
             as ErrorPercent
             FROM totalCallsByDate t LEFT JOIN
             notFoundsByDate nf ON
@@ -72,7 +82,7 @@ class SqlPython:
         print("-------------------------------------------------------------")
 
         for date, error in result:
-             print(str(date) + " - " + str(error) + "% errors.")
-             print(" ")
+            print(str(date) + " - " + str(error) + "% errors.")
+            print(" ")
 
         conn.close
