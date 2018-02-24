@@ -5,13 +5,18 @@ import psycopg2
 class SqlPython:
 
     def most_popular_articlex3(self):
+        '''
+        This method creates a PostgreSQL query of the top three articles of all
+        time. Then the python code prints out the results in an easy to read
+        format.
+        '''
         conn = psycopg2.connect("dbname=news")  # Connects to database
         cur = conn.cursor()
         # Executes my PostgreSQL query
         cur.execute("""
             SELECT articles.title, COUNT(articles.title) AS totalnumber
             FROM articles LEFT JOIN log
-            ON articles.slug = substr(log.path, 10, 25)
+            ON '/article/' || articles.slug = log.path
             GROUP BY articles.title
             ORDER BY totalnumber desc limit 3;
             """)
@@ -29,12 +34,17 @@ class SqlPython:
         conn.close
 
     def most_popular_author(self):
+        '''
+        This method creates a PostgreSQL query of the top articles authors of
+        all time. Then the python code prints out the results in an easy to
+        read format.
+        '''
         conn = psycopg2.connect("dbname=news")
         cur = conn.cursor()
         cur.execute("""
             SELECT authors.name, count(authors.name) as totalnum FROM authors
             LEFT JOIN articles ON authors.id = articles.author LEFT JOIN log
-            ON articles.slug = substr(log.path, 10, 25) GROUP BY authors.name
+            ON '/article/' || articles.slug = log.path GROUP BY authors.name
             ORDER BY totalnum desc;
             """)
 
@@ -51,19 +61,24 @@ class SqlPython:
         conn.close
 
     def most_errors(self):
+        '''
+        This method creates a PostgreSQL query to show on which days did more
+        than 1% of website requests lead to errors. Then the python code prints
+        out the results in an easy to read format.
+        '''
         conn = psycopg2.connect("dbname=news")
         cur = conn.cursor()
         cur.execute("""
             WITH totalCallsByDate AS
-            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate,
+            (SELECT time::date AS CallDate,
             COUNT(time) AS TotalNumberOfCalls
             FROM log GROUP BY CallDate)
             , notFoundsByDate AS
-            (SELECT to_char(time, 'FMMonth DD, YYYY') AS CallDate,
+            (SELECT time::date AS CallDate,
             COUNT(time) AS TotalNumberOfCalls
             FROM log WHERE status = '404 NOT FOUND' GROUP BY CallDate)
             , finalQuery AS
-            (SELECT t.CallDate,
+            (SELECT to_char(t.CallDate, 'FMMonth DD, YYYY'),
             cast(100.0* coalesce(nf.TotalNumberOfCalls,0)/t.TotalNumberOfCalls
             as numeric(5,2))
             as ErrorPercent
@@ -82,7 +97,7 @@ class SqlPython:
         print("-------------------------------------------------------------")
 
         for date, error in result:
-            print(str(date) + " - " + str(error) + "% errors.")
+            print('{} -- {}% errors'.format(date,error))
             print(" ")
 
         conn.close

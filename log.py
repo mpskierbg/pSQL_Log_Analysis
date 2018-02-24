@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 from news import SqlPython
 
 first = SqlPython()

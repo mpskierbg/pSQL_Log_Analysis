@@ -16,12 +16,33 @@ are on a Linux or Mac your console is fine.
 Download Git here: https://git-scm.com/downloads
 
 Additionally, you will need to install VirtualBox, don't worry if you don't know
-much about it. The other files will do all the heavy lifting.
+much about it. The other files will do all the heavy lifting. This will create
+your Virtual Machine(VM)
 Download VirtualBox here: https://www.virtualbox.org/wiki/Download_Old_Builds_5_1
 
 Lastly, you will need to install Vagrant. Vagrant is software that configures
-the VirtualBox and lets you share files between your host computer and
-VirtualBox's file system.
+the VM and lets you share files between your host computer and
+VM's file system.
 Download Vagrant here: https://www.vagrantup.com/downloads.html
 
-You still need to download the VirtualBox configuration.  https://d17h27t6h515a5.cloudfront.net/topher/2017/August/59822701_fsnd-virtual-machine/fsnd-virtual-machine.zip
+You still need to download the VM configuration.  you can do that by
+following this link:
+https://d17h27t6h515a5.cloudfront.net/topher/2017/August/59822701_fsnd-virtual-machine/fsnd-virtual-machine.zip
+
+This will give you a directory called FSND-Virtual-Machine. Change to this
+directory and look for another directory called Vagrant. While inside vagrant
+type vagrant up, the VM will boot up. Then type vagrant ssh to run your new VM.
+
+You will need the SQL database to use my script correctly. You can download it
+here: https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip
+In this zip file move newsdata.sql into the vagrant directory.
+
+Next you will need to load the data. Again, ssh into the VM. From there cd into
+the vagrant directory by typing cd /vagrant. Once in there, type the command
+'psql -d news -f newsdata.sql'
+here is what that command does:
+ - psql — the PostgreSQL command line program
+ - -d news — connect to the database named news which has been set up for you
+ - -f newsdata.sql — run the SQL statements in the file newsdata.sql
+
+ Now, you should be able to fork my code and run log.py. 
