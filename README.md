@@ -45,4 +45,7 @@ here is what that command does:
  - -d news — connect to the database named news which has been set up for you
  - -f newsdata.sql — run the SQL statements in the file newsdata.sql
 
- Now, you should be able to fork my code and run log.py. 
+ Now, you should be able to fork my code and run log.py.
+
+Head to where you saved the SQL file make sure news.py and log.py are there.
+Then all you need to do is run python log.py. 
